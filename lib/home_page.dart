@@ -4,6 +4,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+import 'package:universal_html/html.dart' as html;
 
 class SensorValue {
   final DateTime time;
@@ -205,6 +206,13 @@ class HomePageView extends State<HomePage> with SingleTickerProviderStateMixin {
 
   Future<void> _initController() async {
     try {
+      if (kIsWeb) {
+        final perm =
+            await html.window.navigator.permissions?.query({"name": "camera"});
+        if ((perm?.state ?? 'denied') == "denied") {
+          return;
+        }
+      }
       List cameras = await availableCameras();
       _controller = CameraController(cameras.first, ResolutionPreset.low);
       await _controller?.initialize();
