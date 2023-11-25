@@ -3,8 +3,9 @@ import 'dart:async';
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:myppg/util.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
-import 'package:universal_html/html.dart' as html;
+// import 'package:universal_html/html.dart' as html;
 
 class SensorValue {
   final DateTime time;
@@ -37,6 +38,7 @@ class HomePageView extends State<HomePage> with SingleTickerProviderStateMixin {
   double? _avg; // store the average value during calculation
   DateTime? _now; // store the now Datetime
   Timer? _timer; // timer for image processing
+  Image? imageOutput;
 
   @override
   void initState() {
@@ -69,7 +71,7 @@ class HomePageView extends State<HomePage> with SingleTickerProviderStateMixin {
         child: Column(
           children: <Widget>[
             Expanded(
-                flex: 1,
+                flex: 2,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
@@ -157,6 +159,15 @@ class HomePageView extends State<HomePage> with SingleTickerProviderStateMixin {
                 ),
               ),
             ),
+            Expanded(
+              flex: 2,
+              child: Column(
+                children: [
+                  const Text('Created RGB IMAGE'),
+                  SizedBox(child: imageOutput),
+                ],
+              ),
+            )
           ],
         ),
       ),
@@ -206,21 +217,15 @@ class HomePageView extends State<HomePage> with SingleTickerProviderStateMixin {
 
   Future<void> _initController() async {
     try {
-      if (kIsWeb) {
-        final perm =
-            await html.window.navigator.permissions?.query({"name": "camera"});
-        if ((perm?.state ?? 'denied') == "denied") {
-          return;
-        }
-      }
       List cameras = await availableCameras();
       _controller = CameraController(cameras.first, ResolutionPreset.low);
       await _controller?.initialize();
       Future.delayed(const Duration(milliseconds: 100)).then((onValue) {
         _controller?.setFlashMode(FlashMode.torch);
       });
-      _controller?.startImageStream((CameraImage image) {
+      _controller?.startImageStream((CameraImage image) async {
         _image = image;
+        imageOutput = await Helper.convertYUV420toImageColor(image);
       });
     } catch (e) {
       debugPrint(e.toString());
