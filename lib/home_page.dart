@@ -153,17 +153,23 @@ class HomePageView extends State<HomePage> with SingleTickerProviderStateMixin {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         Text(_breathing ? 'Breathing In' : 'Breathing Out'),
-                        Transform.scale(
-                          scale: _iconScale,
-                          child: IconButton(
-                            icon: const Icon(Icons.air),
-                            color: _breathing ? Colors.red : Colors.black38,
-                            iconSize: 128,
-                            onPressed: () {
-                              setState(() {
-                                _breathing = !_breathing;
-                              });
-                            },
+                        InkWell(
+                          onTapDown: (_) {
+                            setState(() {
+                              _breathing = true;
+                            });
+                          },
+                          onTapUp: (_) {
+                            setState(() {
+                              _breathing = false;
+                            });
+                          },
+                          child: ClipOval(
+                            child: Icon(
+                              Icons.air,
+                              color: _breathing ? Colors.red : Colors.black38,
+                              size: 128,
+                            ),
                           ),
                         ),
                       ],
