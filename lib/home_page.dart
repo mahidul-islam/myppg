@@ -45,6 +45,12 @@ class HomePageView extends State<HomePage> with SingleTickerProviderStateMixin {
         _iconScale = 1.0 + _animationController.value * 0.4;
       });
     });
+    fillInitImage();
+  }
+
+  fillInitImage() async {
+    imageOutput = await Helper.getRGBimage();
+    setState(() {});
   }
 
   @override
@@ -111,15 +117,19 @@ class HomePageView extends State<HomePage> with SingleTickerProviderStateMixin {
                       ),
                     ),
                   ),
-                  Expanded(
-                    flex: 1,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text('Created RGB IMAGE'),
-                        SizedBox(child: imageOutput),
-                      ],
-                    ),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('Created RGB IMAGE'),
+                      SizedBox(
+                        height: 150,
+                        width: 150,
+                        child: FittedBox(
+                          fit: BoxFit.contain,
+                          child: imageOutput,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
