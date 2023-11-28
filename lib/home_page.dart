@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
@@ -67,6 +68,10 @@ class HomePageView extends State<HomePage> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(onPressed: () async {
+        imageOutput = await Helper.getRGBimage();
+        setState(() {});
+      }),
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
@@ -265,7 +270,11 @@ class HomePageView extends State<HomePage> with SingleTickerProviderStateMixin {
       });
       _controller?.startImageStream((CameraImage image) async {
         _image = image;
-        imageOutput = await Helper.convertYUV420toImageColor(image);
+        if (Platform.isAndroid) {
+          imageOutput = await Helper.convertYUV420toImageColor(image);
+        } else if (Platform.isIOS) {
+          imageOutput = await Helper.convertBGRA8888ToImage(image);
+        }
       });
     } catch (e) {
       debugPrint(e.toString());
