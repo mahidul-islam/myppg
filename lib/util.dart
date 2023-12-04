@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image/image.dart' as imglib;
 
 class Helper {
@@ -112,6 +113,33 @@ class Helper {
     }
 
     return output;
+  }
+
+  Future<List<List<List<int>>>> getRGBOnArrays(String asset) async {
+    final Uint8List inputImg =
+        (await rootBundle.load(asset)).buffer.asUint8List();
+    // Assuming Jpg image
+    final imglib.JpegDecoder decoder = imglib.JpegDecoder();
+    final imglib.Image? decodedImg = decoder.decode(inputImg);
+    final Uint8List? decodedBytes =
+        decodedImg?.getBytes(order: imglib.ChannelOrder.rgb);
+    List<List<List<int>>> imgArr = [];
+    for (int y = 0; y < (decodedImg?.height.toInt() ?? 0); y++) {
+      imgArr.add([]);
+      for (int x = 0; x < (decodedImg?.width.toInt() ?? 0); x++) {
+        int red =
+            decodedBytes?[y * (decodedImg?.width.toInt() ?? 0) * 3 + x * 3] ??
+                0;
+        int green = decodedBytes?[
+                y * (decodedImg?.width.toInt() ?? 0) * 3 + x * 3 + 1] ??
+            0;
+        int blue = decodedBytes?[
+                y * (decodedImg?.width.toInt() ?? 0) * 3 + x * 3 + 2] ??
+            0;
+        imgArr[y].add([red, green, blue]);
+      }
+    }
+    return imgArr;
   }
 
   imglib.Image convertYUV420ToImage(CameraImage cameraImage) {
