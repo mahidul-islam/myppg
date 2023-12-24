@@ -43,10 +43,13 @@ class ImageSplitPageView extends State<ImageSplitPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButtonLocation:
+          FloatingActionButtonLocation.miniCenterDocked,
       floatingActionButton: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           FloatingActionButton(
+            mini: true,
             heroTag: 'hello',
             onPressed: () {
               if (_toggled) {
@@ -58,6 +61,7 @@ class ImageSplitPageView extends State<ImageSplitPage>
             child: const Icon(Icons.start),
           ),
           FloatingActionButton(
+            mini: true,
             heroTag: 'new',
             onPressed: () async {
               if (_image != null) {
@@ -67,6 +71,14 @@ class ImageSplitPageView extends State<ImageSplitPage>
               setState(() {});
             },
             child: const Icon(Icons.camera),
+          ),
+          FloatingActionButton(
+            mini: true,
+            heroTag: 'again',
+            onPressed: () async {
+              setState(() {});
+            },
+            child: const Icon(Icons.precision_manufacturing_outlined),
           ),
         ],
       ),
@@ -106,11 +118,11 @@ class ImageSplitPageView extends State<ImageSplitPage>
                     )
                   : GridView(
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 4,
-                          mainAxisSpacing: 0,
-                          crossAxisSpacing: 0,
-                          childAspectRatio:
-                              _controller?.value.aspectRatio ?? 1.0),
+                        crossAxisCount: 4,
+                        mainAxisSpacing: 2,
+                        crossAxisSpacing: 2,
+                        childAspectRatio: _controller?.value.aspectRatio ?? 1.0,
+                      ),
                       children: [
                         for (Image img in splitImages!) img,
                       ],
@@ -152,9 +164,7 @@ class ImageSplitPageView extends State<ImageSplitPage>
       List cameras = await availableCameras();
       _controller = CameraController(cameras.first, ResolutionPreset.low);
       await _controller?.initialize();
-      Future.delayed(const Duration(milliseconds: 100)).then((onValue) {
-        _controller?.setFlashMode(FlashMode.torch);
-      });
+
       _controller?.startImageStream((CameraImage image) async {
         _image = image;
         if (Platform.isAndroid) {
