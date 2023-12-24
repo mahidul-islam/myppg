@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+
+import 'package:myppg/split_image.dart';
 import 'package:myppg/util.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
@@ -68,10 +70,46 @@ class HomePageView extends State<HomePage> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(onPressed: () async {
-        imageOutput = await Helper.getRGBimage();
-        setState(() {});
-      }),
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          FloatingActionButton(
+            onPressed: () async {
+              imageOutput = await Helper.getRGBimage();
+              setState(() {});
+            },
+            child: const Icon(Icons.image_outlined),
+          ),
+          FloatingActionButton(
+            heroTag: 'split image',
+            onPressed: () async {
+              showDialog(
+                context: context,
+                builder: (_) {
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ImageSplitPage(),
+                            ),
+                          );
+                        },
+                        child: const Text('Split Image'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+            child: const Icon(Icons.pages),
+          ),
+        ],
+      ),
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(

@@ -1,5 +1,6 @@
 // ignore_for_file: constant_identifier_names
 
+import 'dart:io';
 import 'dart:math';
 
 import 'package:camera/camera.dart';
@@ -15,6 +16,62 @@ class Helper {
   /// We need to handle them respectively.
 
   static const shift = (0xFF << 24);
+
+  static Future<Uint8List> getUint8ListFromCameraImage(
+      CameraImage image) async {
+    if (Platform.isAndroid) {
+      final int width = image.width;
+      final int height = image.height;
+      final int uvRowStride = image.planes[1].bytesPerRow;
+      final int? uvPixelStride = image.planes[1].bytesPerPixel;
+
+      imglib.Image img = imglib.Image(width: width, height: height);
+
+      // Fill image buffer with plane[0] from YUV420_888
+      for (int x = 0; x < width; x++) {
+        for (int y = 0; y < height; y++) {
+          final int uvIndex = (uvPixelStride ?? 0) * (x / 2).floor() +
+              uvRowStride * (y / 2).floor();
+          final int index = y * width + x;
+
+          final yp = image.planes[0].bytes[index];
+          final up = image.planes[1].bytes[uvIndex];
+          final vp = image.planes[2].bytes[uvIndex];
+          // Calculate pixel color
+          int r = (yp + vp * 1436 / 1024 - 179).round().clamp(0, 255);
+          int g = (yp - up * 46549 / 131072 + 44 - vp * 93604 / 131072 + 91)
+              .round()
+              .clamp(0, 255);
+          int b = (yp + up * 1814 / 1024 - 227).round().clamp(0, 255);
+          // color: 0x FF  FF  FF  FF
+          //           A   B   G   R
+          if (img.isBoundsSafe(height - 1 - y, x)) {
+            img.setPixelRgba(height - 1 - y, x, r, g, b, shift);
+          }
+        }
+      }
+
+      imglib.PngEncoder pngEncoder =
+          imglib.PngEncoder(level: 0, filter: imglib.PngFilter.none);
+      return pngEncoder.encode(img);
+    } else if (Platform.isIOS) {
+      final plane = image.planes[0];
+      imglib.Image img = imglib.Image.fromBytes(
+        width: image.width,
+        height: image.height,
+        bytes: plane.bytes.buffer,
+        rowStride: plane.bytesPerRow,
+        bytesOffset: IOS_BYTES_OFFSET,
+        order: imglib.ChannelOrder.bgra,
+      );
+      imglib.PngEncoder pngEncoder =
+          imglib.PngEncoder(level: 0, filter: imglib.PngFilter.none);
+      return pngEncoder.encode(img);
+    } else {
+      return Uint8List.fromList([]);
+    }
+  }
+
   static Future<Image?> convertYUV420toImageColor(CameraImage image) async {
     try {
       final int width = image.width;
@@ -82,7 +139,8 @@ class Helper {
     return Image.memory(png);
   }
 
-  List<Image>? splitImage(Uint8List input) {
+  static List<Image>? splitImage(Uint8List input) {
+    const int split = 4;
     // convert image to image from image package
     imglib.Image? image = imglib.decodeImage(input);
 
@@ -91,13 +149,13 @@ class Helper {
     }
 
     int x = 0, y = 0;
-    int width = (image.width / 4).floor();
-    int height = (image.height / 4).floor();
+    int width = (image.width / split).floor();
+    int height = (image.height / split).floor();
 
     // split image to parts
     List<imglib.Image> parts = <imglib.Image>[];
-    for (int i = 0; i < 4; i++) {
-      for (int j = 0; j < 4; j++) {
+    for (int i = 0; i < split; i++) {
+      for (int j = 0; j < split; j++) {
         parts.add(
             imglib.copyCrop(image, x: x, y: y, width: width, height: height));
         x += width;
