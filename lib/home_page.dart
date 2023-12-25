@@ -293,7 +293,7 @@ class HomePageView extends State<HomePage> with SingleTickerProviderStateMixin {
       });
       _controller?.startImageStream((CameraImage image) async {
         frameCount += 1;
-        ppgData.addData(image, _breathing);
+        await ppgData.addData(image, _breathing);
         // if (Platform.isAndroid) {
         //   imageOutput = await Helper.convertYUV420toImageColor(image);
         // } else if (Platform.isIOS) {
