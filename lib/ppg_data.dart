@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:camera/camera.dart';
+
 String ppgDataToJson(PpgData data) => json.encode(data.toJson());
 
 class PpgData {
@@ -19,6 +21,12 @@ class PpgData {
         "recording_options": recordingOptions.toJson(),
         "time_series": timeSeries.toJson(),
       };
+
+  void addData(CameraImage? cameraImage, bool breathing) {
+    if (cameraImage == null) {
+      return;
+    }
+  }
 }
 
 class MetaData {

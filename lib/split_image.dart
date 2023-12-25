@@ -145,7 +145,7 @@ class ImageSplitPageView extends State<ImageSplitPage>
                     ),
             ),
             Expanded(
-              flex: 1,
+              flex: 2,
               child: pixelForImage == null
                   ? const Center(
                       child: Text('Split Images here'),
@@ -156,7 +156,7 @@ class ImageSplitPageView extends State<ImageSplitPage>
                         crossAxisCount: 4,
                         mainAxisSpacing: 2,
                         crossAxisSpacing: 2,
-                        childAspectRatio: 2,
+                        childAspectRatio: 1.5,
                       ),
                       children: [
                         for (List<double> rgb in pixelForImage!)
@@ -176,7 +176,9 @@ class ImageSplitPageView extends State<ImageSplitPage>
     }
     return Row(
       children: [
-        SizedBox(
+        Container(
+            color: Color.fromRGBO(
+                rgb[0].toInt(), rgb[1].toInt(), rgb[2].toInt(), 0.7),
             width: MediaQuery.of(context).size.width / 4 - 2,
             child: Text(rgb.map((e) => e.toStringAsFixed(2)).toString()))
       ],
