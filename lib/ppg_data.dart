@@ -28,10 +28,10 @@ class PpgData {
     return ppg;
   }
 
-  Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson({bool compress = true}) => {
         "meta_data": metaData?.toJson(),
         "recording_options": recordingOptions?.toJson(),
-        "time_series": timeSeries?.toJson(),
+        "time_series": timeSeries?.toJson(compress: compress),
       };
 
   Future<void> addData(CameraImage? cameraImage, bool breathing) async {
@@ -40,22 +40,22 @@ class PpgData {
     }
     timeSeries ??= TimeSeries(
       breathingStream: [],
-      pixelAverage: PixelAverage(
-        r: [],
-        g: [],
-        b: [],
-      ),
+      pixelAverage: [],
     );
     List<imglib.Image>? images = Helper.splitImageIn4x4(
         await Helper.getUint8ListFromCameraImage(cameraImage));
     if (images == null || images.isEmpty) {
       return;
     }
-    List<double> pixel = Helper.getReducedRGBFromImagelibImage(images.first);
-
-    timeSeries?.pixelAverage.r.add(pixel[0]);
-    timeSeries?.pixelAverage.g.add(pixel[1]);
-    timeSeries?.pixelAverage.b.add(pixel[2]);
+    for (int i = 0; i < images.length; i++) {
+      List<double> pixel = Helper.getReducedRGBFromImagelibImage(images[i]);
+      if ((timeSeries?.pixelAverage.length ?? 0) < (i + 1)) {
+        timeSeries?.pixelAverage.add(PixelAverage(r: [], g: [], b: []));
+      }
+      timeSeries?.pixelAverage[i].r.add(pixel[0]);
+      timeSeries?.pixelAverage[i].g.add(pixel[1]);
+      timeSeries?.pixelAverage[i].b.add(pixel[2]);
+    }
     timeSeries?.breathingStream.add(breathing ? 1 : 0);
   }
 
@@ -131,17 +131,22 @@ class RecordingOptions {
 
 class TimeSeries {
   List<int> breathingStream;
-  PixelAverage pixelAverage;
+  List<PixelAverage> pixelAverage;
 
   TimeSeries({
     required this.breathingStream,
     required this.pixelAverage,
   });
 
-  Map<String, dynamic> toJson() => {
-        "breathing_stream": base64
-            .encode(Int8List.fromList(breathingStream).buffer.asUint8List()),
-        "pixel_average": pixelAverage.toJson(),
+  Map<String, dynamic> toJson({bool compress = true}) => {
+        "breathing_stream": compress
+            ? base64
+                .encode(Int8List.fromList(breathingStream).buffer.asUint8List())
+            : breathingStream.toList(),
+        "pixel_average": List<dynamic>.from(
+            pixelAverage.map((x) => x.toJson(compress: compress))),
+
+        // pixelAverage.toJson(compress: compress),
       };
 }
 
@@ -156,9 +161,15 @@ class PixelAverage {
     required this.b,
   });
 
-  Map<String, dynamic> toJson() => {
-        "r": base64.encode(Float32List.fromList(r).buffer.asUint8List()),
-        "g": base64.encode(Float32List.fromList(g).buffer.asUint8List()),
-        "b": base64.encode(Float32List.fromList(b).buffer.asUint8List()),
+  Map<String, dynamic> toJson({bool compress = true}) => {
+        "r": compress
+            ? base64.encode(Float32List.fromList(r).buffer.asUint8List())
+            : r.toList(),
+        "g": compress
+            ? base64.encode(Float32List.fromList(g).buffer.asUint8List())
+            : g.toList(),
+        "b": compress
+            ? base64.encode(Float32List.fromList(b).buffer.asUint8List())
+            : b.toList(),
       };
 }

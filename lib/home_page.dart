@@ -6,7 +6,7 @@ import 'package:myppg/ppg_data.dart';
 
 import 'package:myppg/split_image.dart';
 import 'package:myppg/util.dart';
-// import 'package:share_plus/share_plus.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 class HomePage extends StatefulWidget {
@@ -233,7 +233,7 @@ class HomePageView extends State<HomePage> with SingleTickerProviderStateMixin {
                   MaterialButton(
                     color: Colors.amberAccent,
                     onPressed: () {
-                      // Share.share(ppgDataToJson(ppgData));
+                      Share.share(ppgData.toJson(compress: false).toString());
                     },
                     child: const Text('Share Raw'),
                   ),
@@ -241,7 +241,7 @@ class HomePageView extends State<HomePage> with SingleTickerProviderStateMixin {
                   MaterialButton(
                     color: Colors.amberAccent,
                     onPressed: () {
-                      // Share.share(ppgData.toJson().toString());
+                      Share.share(ppgData.toJson().toString());
                     },
                     child: const Text('Share Base64\'ed'),
                   ),
