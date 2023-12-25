@@ -139,7 +139,7 @@ class Helper {
     return Image.memory(png);
   }
 
-  static List<imglib.Image>? splitImage(Uint8List input) {
+  static List<imglib.Image>? splitImageIn4x4(Uint8List input) {
     const int split = 4;
     // convert image to image from image package
     imglib.Image? image = imglib.decodeImage(input);

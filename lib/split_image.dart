@@ -69,7 +69,7 @@ class ImageSplitPageView extends State<ImageSplitPage>
             heroTag: 'new',
             onPressed: () async {
               if (_image != null) {
-                splitImages = Helper.splitImage(
+                splitImages = Helper.splitImageIn4x4(
                     await Helper.getUint8ListFromCameraImage(_image!));
               }
               setState(() {});
