@@ -21,13 +21,20 @@ class PpgData {
     required this.timeSeries,
   });
 
+  factory PpgData.init() {
+    PpgData ppg =
+        PpgData(metaData: null, recordingOptions: null, timeSeries: null);
+    ppg.addInitMetaData();
+    return ppg;
+  }
+
   Map<String, dynamic> toJson() => {
         "meta_data": metaData?.toJson(),
         "recording_options": recordingOptions?.toJson(),
         "time_series": timeSeries?.toJson(),
       };
 
-  void addData(CameraImage? cameraImage, bool breathing) async {
+  Future<void> addData(CameraImage? cameraImage, bool breathing) async {
     if (cameraImage == null) {
       return;
     }

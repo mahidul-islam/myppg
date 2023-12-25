@@ -2,9 +2,11 @@ import 'dart:async';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:myppg/ppg_data.dart';
 
 import 'package:myppg/split_image.dart';
 import 'package:myppg/util.dart';
+// import 'package:share_plus/share_plus.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 class HomePage extends StatefulWidget {
@@ -23,10 +25,13 @@ class HomePageView extends State<HomePage> with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   double _iconScale = 1;
   Image? imageOutput;
+  late PpgData ppgData;
+  int frameCount = 0;
 
   @override
   void initState() {
     super.initState();
+    ppgData = PpgData.init();
     _animationController = AnimationController(
         duration: const Duration(milliseconds: 500), vsync: this);
     _animationController.addListener(() {
@@ -223,18 +228,22 @@ class HomePageView extends State<HomePage> with SingleTickerProviderStateMixin {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('Data size 20kb'),
-                  const SizedBox(height: 20),
+                  // const Text('Data size 20kb'),
+                  // const SizedBox(height: 20),
                   MaterialButton(
                     color: Colors.amberAccent,
-                    onPressed: () {},
-                    child: const Text('Save on File'),
+                    onPressed: () {
+                      // Share.share(ppgDataToJson(ppgData));
+                    },
+                    child: const Text('Share Raw'),
                   ),
                   const SizedBox(height: 20),
                   MaterialButton(
                     color: Colors.amberAccent,
-                    onPressed: () {},
-                    child: const Text('Upload to Backend'),
+                    onPressed: () {
+                      // Share.share(ppgData.toJson().toString());
+                    },
+                    child: const Text('Share Base64\'ed'),
                   ),
                 ],
               ),
@@ -257,6 +266,10 @@ class HomePageView extends State<HomePage> with SingleTickerProviderStateMixin {
 
   void _untoggle() {
     _disposeController();
+    int duration = DateTime.now().millisecondsSinceEpoch -
+        (ppgData.metaData?.timestamp ?? 0);
+    ppgData.addFinalMetaData(duration, frameCount);
+    frameCount = 0;
     WakelockPlus.disable();
     _animationController.stop();
     _animationController.value = 0.0;
@@ -279,6 +292,8 @@ class HomePageView extends State<HomePage> with SingleTickerProviderStateMixin {
         _controller?.setFlashMode(FlashMode.torch);
       });
       _controller?.startImageStream((CameraImage image) async {
+        frameCount += 1;
+        ppgData.addData(image, _breathing);
         // if (Platform.isAndroid) {
         //   imageOutput = await Helper.convertYUV420toImageColor(image);
         // } else if (Platform.isIOS) {
