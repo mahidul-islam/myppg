@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
@@ -7,13 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:myppg/split_image.dart';
 import 'package:myppg/util.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
-
-class SensorValue {
-  final DateTime time;
-  final double value;
-
-  SensorValue(this.time, this.value);
-}
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -27,15 +19,9 @@ class HomePage extends StatefulWidget {
 class HomePageView extends State<HomePage> with SingleTickerProviderStateMixin {
   bool _toggled = false; // toggle button value
   bool _breathing = false; // toggle button value
-  final List<SensorValue> _data =
-      List.empty(growable: true); // array to store the values
   CameraController? _controller;
   late AnimationController _animationController;
   double _iconScale = 1;
-  final int _fs = 30; // sampling frequency (fps)
-  final int _windowLen = 30 * 6; // window length to display - 6 seconds
-  CameraImage? _image; // store the last camera image
-  Timer? _timer; // timer for image processing
   Image? imageOutput;
 
   @override
@@ -58,7 +44,6 @@ class HomePageView extends State<HomePage> with SingleTickerProviderStateMixin {
 
   @override
   void dispose() {
-    _timer?.cancel();
     _toggled = false;
     _disposeController();
     WakelockPlus.disable();
@@ -260,28 +245,13 @@ class HomePageView extends State<HomePage> with SingleTickerProviderStateMixin {
     );
   }
 
-  void _clearData() {
-    // create array of 128 ~= 255/2
-    _data.clear();
-    int now = DateTime.now().millisecondsSinceEpoch;
-    for (int i = 0; i < _windowLen; i++) {
-      _data.insert(
-          0,
-          SensorValue(
-              DateTime.fromMillisecondsSinceEpoch(now - i * 1000 ~/ _fs), 128));
-    }
-  }
-
   void _toggle() {
-    _clearData();
     _initController().then((onValue) {
       WakelockPlus.enable();
       _animationController.repeat(reverse: true);
       setState(() {
         _toggled = true;
       });
-      // after is toggled
-      _initTimer();
     });
   }
 
@@ -309,40 +279,14 @@ class HomePageView extends State<HomePage> with SingleTickerProviderStateMixin {
         _controller?.setFlashMode(FlashMode.torch);
       });
       _controller?.startImageStream((CameraImage image) async {
-        _image = image;
-        if (Platform.isAndroid) {
-          imageOutput = await Helper.convertYUV420toImageColor(image);
-        } else if (Platform.isIOS) {
-          imageOutput = await Helper.convertBGRA8888ToImage(image);
-        }
+        // if (Platform.isAndroid) {
+        //   imageOutput = await Helper.convertYUV420toImageColor(image);
+        // } else if (Platform.isIOS) {
+        //   imageOutput = await Helper.convertBGRA8888ToImage(image);
+        // }
       });
     } catch (e) {
       debugPrint(e.toString());
     }
   }
-
-  void _initTimer() {
-    _timer = Timer.periodic(Duration(milliseconds: 1000 ~/ _fs), (timer) {
-      if (_toggled) {
-        if (_image != null) {
-          // _scanImage(_image!);
-        }
-      } else {
-        timer.cancel();
-      }
-    });
-  }
-
-  // void _scanImage(CameraImage image) {
-  //   _now = DateTime.now();
-  //   _avg =
-  //       image.planes.first.bytes.reduce((value, element) => value + element) /
-  //           image.planes.first.bytes.length;
-  //   if (_data.length >= _windowLen) {
-  //     _data.removeAt(0);
-  //   }
-  //   setState(() {
-  //     _data.add(SensorValue(_now ?? DateTime.now(), 255 - (_avg ?? 0.0)));
-  //   });
-  // }
 }
