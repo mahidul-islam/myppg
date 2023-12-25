@@ -200,7 +200,7 @@ class Helper {
     return imgArr;
   }
 
-  static List<double> getRGBOnArrayFromCameraImage(imglib.Image? image) {
+  static List<double> getReducedRGBFromImagelibImage(imglib.Image? image) {
     // final Uint8List inputImg = image.toUint8List();
 
     // // Assuming Png image
@@ -214,11 +214,11 @@ class Helper {
       imgArr.add([]);
       for (int x = 0; x < (image?.width.toInt() ?? 0); x++) {
         int red =
-            decodedBytes?[y * (image?.width.toInt() ?? 0) * 3 + x * 3] ?? 0;
+            decodedBytes?[y * (image?.width.toInt() ?? 0) * 4 + x * 4] ?? 0;
         int green =
-            decodedBytes?[y * (image?.width.toInt() ?? 0) * 3 + x * 3 + 1] ?? 0;
+            decodedBytes?[y * (image?.width.toInt() ?? 0) * 4 + x * 4 + 1] ?? 0;
         int blue =
-            decodedBytes?[y * (image?.width.toInt() ?? 0) * 3 + x * 3 + 2] ?? 0;
+            decodedBytes?[y * (image?.width.toInt() ?? 0) * 4 + x * 4 + 2] ?? 0;
         imgArr[y].add([red, green, blue]);
       }
     }

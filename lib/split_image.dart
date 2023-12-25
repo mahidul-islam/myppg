@@ -85,7 +85,7 @@ class ImageSplitPageView extends State<ImageSplitPage>
                   pixelForImage = [];
                   for (imglib.Image img in splitImages!) {
                     pixelForImage
-                        ?.add(Helper.getRGBOnArrayFromCameraImage(img));
+                        ?.add(Helper.getReducedRGBFromImagelibImage(img));
                   }
                   pixelForImage;
                 }
@@ -156,7 +156,7 @@ class ImageSplitPageView extends State<ImageSplitPage>
                         crossAxisCount: 4,
                         mainAxisSpacing: 2,
                         crossAxisSpacing: 2,
-                        childAspectRatio: 1.0,
+                        childAspectRatio: 2,
                       ),
                       children: [
                         for (List<double> rgb in pixelForImage!)
