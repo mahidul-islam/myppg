@@ -79,10 +79,10 @@ class Helper {
       final int uvRowStride = image.planes[1].bytesPerRow;
       final int? uvPixelStride = image.planes[1].bytesPerPixel;
 
-      if (kDebugMode) {
-        print("uvRowStride: $uvRowStride");
-        print("uvPixelStride: $uvPixelStride");
-      }
+      // if (kDebugMode) {
+      //   print("uvRowStride: $uvRowStride");
+      //   print("uvPixelStride: $uvPixelStride");
+      // }
       imglib.Image img = imglib.Image(width: width, height: height);
 
       // Fill image buffer with plane[0] from YUV420_888
@@ -139,7 +139,7 @@ class Helper {
     return Image.memory(png);
   }
 
-  static List<Image>? splitImage(Uint8List input) {
+  static List<imglib.Image>? splitImage(Uint8List input) {
     const int split = 4;
     // convert image to image from image package
     imglib.Image? image = imglib.decodeImage(input);
@@ -164,13 +164,13 @@ class Helper {
       y += height;
     }
 
-    // convert image from image package to Image Widget to display
-    List<Image> output = <Image>[];
-    for (var img in parts) {
-      output.add(Image.memory(imglib.encodeJpg(img)));
-    }
+    // // convert image from image package to Image Widget to display
+    // List<Image> output = <Image>[];
+    // for (var img in parts) {
+    //   output.add(Image.memory(imglib.encodeJpg(img)));
+    // }
 
-    return output;
+    return parts;
   }
 
   Future<List<List<List<int>>>> getRGBOnArrays(String asset) async {
@@ -198,6 +198,42 @@ class Helper {
       }
     }
     return imgArr;
+  }
+
+  static List<double> getRGBOnArrayFromCameraImage(imglib.Image? image) {
+    // final Uint8List inputImg = image.toUint8List();
+
+    // // Assuming Png image
+    // final imglib.PngDecoder decoder = imglib.PngDecoder();
+    // final imglib.Image? decodedImg = decoder.decode(inputImg);
+    final Uint8List? decodedBytes =
+        image?.getBytes(order: imglib.ChannelOrder.rgb);
+    List<List<List<int>>> imgArr = [];
+
+    for (int y = 0; y < (image?.height.toInt() ?? 0); y++) {
+      imgArr.add([]);
+      for (int x = 0; x < (image?.width.toInt() ?? 0); x++) {
+        int red =
+            decodedBytes?[y * (image?.width.toInt() ?? 0) * 3 + x * 3] ?? 0;
+        int green =
+            decodedBytes?[y * (image?.width.toInt() ?? 0) * 3 + x * 3 + 1] ?? 0;
+        int blue =
+            decodedBytes?[y * (image?.width.toInt() ?? 0) * 3 + x * 3 + 2] ?? 0;
+        imgArr[y].add([red, green, blue]);
+      }
+    }
+    int totalGreen = 0;
+    int totalRed = 0;
+    int totalBlue = 0;
+    int tp = imgArr.length * imgArr[0].length;
+    for (int i = 0; i < imgArr.length; i++) {
+      for (int j = 0; j < imgArr[i].length; j++) {
+        totalRed += imgArr[i][j][0];
+        totalGreen += imgArr[i][j][1];
+        totalBlue += imgArr[i][j][2];
+      }
+    }
+    return [totalRed / tp, totalGreen / tp, totalBlue / tp];
   }
 
   imglib.Image convertYUV420ToImage(CameraImage cameraImage) {

@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:myppg/util.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+import 'package:image/image.dart' as imglib;
+
 class ImageSplitPage extends StatefulWidget {
   const ImageSplitPage({super.key});
 
@@ -23,7 +25,9 @@ class ImageSplitPageView extends State<ImageSplitPage>
   CameraController? _controller;
 
   CameraImage? _image; // store the last camera image
-  List<Image>? splitImages;
+  List<imglib.Image>? splitImages;
+
+  List<List<double>>? pixelForImage;
 
   Image? imageOutput;
 
@@ -75,8 +79,17 @@ class ImageSplitPageView extends State<ImageSplitPage>
           FloatingActionButton(
             mini: true,
             heroTag: 'again',
-            onPressed: () async {
-              setState(() {});
+            onPressed: () {
+              setState(() {
+                if (splitImages != null) {
+                  pixelForImage = [];
+                  for (imglib.Image img in splitImages!) {
+                    pixelForImage
+                        ?.add(Helper.getRGBOnArrayFromCameraImage(img));
+                  }
+                  pixelForImage;
+                }
+              });
             },
             child: const Icon(Icons.precision_manufacturing_outlined),
           ),
@@ -126,14 +139,47 @@ class ImageSplitPageView extends State<ImageSplitPage>
                         childAspectRatio: _controller?.value.aspectRatio ?? 1.0,
                       ),
                       children: [
-                        for (Image img in splitImages!) img,
+                        for (imglib.Image img in splitImages!)
+                          Image.memory(imglib.encodeJpg(img)),
                       ],
                     ),
             ),
-            const Expanded(flex: 1, child: SizedBox()),
+            Expanded(
+              flex: 1,
+              child: pixelForImage == null
+                  ? const Center(
+                      child: Text('Split Images here'),
+                    )
+                  : GridView(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 4,
+                        mainAxisSpacing: 2,
+                        crossAxisSpacing: 2,
+                        childAspectRatio: 1.0,
+                      ),
+                      children: [
+                        for (List<double> rgb in pixelForImage!)
+                          getPixelRep(rgb) ?? const SizedBox(),
+                      ],
+                    ),
+            ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget? getPixelRep(List<double> rgb) {
+    if (rgb.length != 3) {
+      return null;
+    }
+    return Row(
+      children: [
+        SizedBox(
+            width: MediaQuery.of(context).size.width / 4 - 2,
+            child: Text(rgb.map((e) => e.toStringAsFixed(2)).toString()))
+      ],
     );
   }
 
