@@ -90,7 +90,7 @@ class ImageSplitPageView extends State<ImageSplitPage>
         child: Column(
           children: <Widget>[
             Expanded(
-              flex: 2,
+              flex: 1,
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: ClipRRect(
@@ -98,9 +98,11 @@ class ImageSplitPageView extends State<ImageSplitPage>
                     Radius.circular(18),
                   ),
                   child: _toggled
-                      ? AspectRatio(
-                          aspectRatio: _controller?.value.aspectRatio ?? 0.0,
-                          child: CameraPreview(_controller!),
+                      ? Center(
+                          child: AspectRatio(
+                            aspectRatio: _controller?.value.aspectRatio ?? 0.0,
+                            child: CameraPreview(_controller!),
+                          ),
                         )
                       : Container(
                           padding: const EdgeInsets.all(12),

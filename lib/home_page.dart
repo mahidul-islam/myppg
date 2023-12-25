@@ -131,10 +131,12 @@ class HomePageView extends State<HomePage> with SingleTickerProviderStateMixin {
                           alignment: Alignment.center,
                           children: <Widget>[
                             _toggled
-                                ? AspectRatio(
-                                    aspectRatio:
-                                        _controller?.value.aspectRatio ?? 0.0,
-                                    child: CameraPreview(_controller!),
+                                ? Center(
+                                    child: AspectRatio(
+                                      aspectRatio:
+                                          _controller?.value.aspectRatio ?? 0.0,
+                                      child: CameraPreview(_controller!),
+                                    ),
                                   )
                                 : Container(
                                     padding: const EdgeInsets.all(12),
