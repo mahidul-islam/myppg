@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +7,7 @@ import 'package:myppg/ppg_data.dart';
 
 import 'package:myppg/split_image.dart';
 import 'package:myppg/util.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
@@ -228,8 +230,6 @@ class HomePageView extends State<HomePage> with SingleTickerProviderStateMixin {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // const Text('Data size 20kb'),
-                  // const SizedBox(height: 20),
                   MaterialButton(
                     color: Colors.amberAccent,
                     onPressed: () {
@@ -244,6 +244,20 @@ class HomePageView extends State<HomePage> with SingleTickerProviderStateMixin {
                       Share.share(ppgData.toJson().toString());
                     },
                     child: const Text('Share Base64\'ed'),
+                  ),
+                  const SizedBox(height: 20),
+                  MaterialButton(
+                    color: Colors.amberAccent,
+                    onPressed: () async {
+                      final Directory directory =
+                          await getApplicationDocumentsDirectory();
+                      final File file = File(
+                          '${directory.path}/ppg-${DateTime.now().millisecondsSinceEpoch ~/ 1000}.txt');
+                      await file.writeAsString(ppgData.toJson().toString());
+                      Share.shareXFiles([XFile(file.path)]);
+                      Share.share(ppgData.toJson(compress: false).toString());
+                    },
+                    child: const Text('Share File'),
                   ),
                 ],
               ),

@@ -210,15 +210,25 @@ class Helper {
         image?.getBytes(order: imglib.ChannelOrder.rgb);
     List<List<List<int>>> imgArr = [];
 
+    int byteCountInPixel = Platform.isAndroid ? 3 : 4;
+
     for (int y = 0; y < (image?.height.toInt() ?? 0); y++) {
       imgArr.add([]);
       for (int x = 0; x < (image?.width.toInt() ?? 0); x++) {
-        int red =
-            decodedBytes?[y * (image?.width.toInt() ?? 0) * 4 + x * 4] ?? 0;
-        int green =
-            decodedBytes?[y * (image?.width.toInt() ?? 0) * 4 + x * 4 + 1] ?? 0;
-        int blue =
-            decodedBytes?[y * (image?.width.toInt() ?? 0) * 4 + x * 4 + 2] ?? 0;
+        int red = decodedBytes?[
+                y * (image?.width.toInt() ?? 0) * byteCountInPixel +
+                    x * byteCountInPixel] ??
+            0;
+        int green = decodedBytes?[
+                y * (image?.width.toInt() ?? 0) * byteCountInPixel +
+                    x * byteCountInPixel +
+                    1] ??
+            0;
+        int blue = decodedBytes?[
+                y * (image?.width.toInt() ?? 0) * byteCountInPixel +
+                    x * byteCountInPixel +
+                    2] ??
+            0;
         imgArr[y].add([red, green, blue]);
       }
     }
